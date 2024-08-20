@@ -110,6 +110,9 @@ To release a new version, do the following workflow:
 
     1. Update any `sinceVersion` set to `Nothing` in `ConfigData.hs`
 
+    1. Verify that all backwards compatibility flags include a comment noting the GHC version they can be removed in.
+        * See [Breaking changes policy](https://github.com/fourmolu/fourmolu#breaking-changes-policy)
+
     1. Audit `web/site/` docs
 
     1. Check that `--help` looks good
