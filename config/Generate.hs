@@ -32,6 +32,7 @@ configGenHs =
       "  , parsePrinterOptsCLI",
       "  , parsePrinterOptsJSON",
       "  , parsePrinterOptType",
+      "  , backwardsCompatOptions",
       "  )",
       "where",
       "",
@@ -178,7 +179,11 @@ configGenHs =
       "defaultPrinterOptsYaml :: String",
       "defaultPrinterOptsYaml =",
       "  unlines",
-      indent' 2 (renderMultiLineStringList fourmoluYamlFourmoluStyle)
+      indent' 2 (renderMultiLineStringList fourmoluYamlFourmoluStyle),
+      "",
+      "backwardsCompatOptions :: [(String, PrinterOpts Identity -> Bool)]",
+      "backwardsCompatOptions =",
+      indent' 2 renderBackwardsCompatOptions
     ]
   where
     mkPrinterOpts :: ((String, Option) -> String) -> String
@@ -257,3 +262,13 @@ fourmoluYamlFourmoluStyle = unlines_ config
                 printf " (choices: %s)" (renderList $ map snd enumOptions)
               _ -> ""
        in concat [help, choicesText]
+
+renderBackwardsCompatOptions :: String
+renderBackwardsCompatOptions = unlines [opt <> " :" | opt <- opts] <> "[]"
+  where
+    -- list of ("option-name", \opts -> poField opts /= pure False)
+    opts =
+      [ "(" <> show name <> ", " <> isActive <> ")"
+      | Option {name, fieldName = Just fieldName, default_} <- backwardsCompatOptions,
+        let isActive = "\\opts -> " <> fieldName <> " opts /= pure " <> renderHs default_
+      ]

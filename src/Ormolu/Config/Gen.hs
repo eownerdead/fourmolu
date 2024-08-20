@@ -27,6 +27,7 @@ module Ormolu.Config.Gen
   , parsePrinterOptsCLI
   , parsePrinterOptsJSON
   , parsePrinterOptType
+  , backwardsCompatOptions
   )
 where
 
@@ -77,6 +78,10 @@ data PrinterOpts f =
       poRespectful :: f Bool
     , -- | Rules for grouping import declarations
       poImportGrouping :: f ImportGrouping
+    , -- | Backwards compat flag for putting parenthesized function args on one line
+      poBackwardsCompatSingleLineArgs :: f Bool
+    , -- | Backwards compat flag for indenting list comprehension content
+      poBackwardsCompatListCompIndent :: f Bool
     }
   deriving (Generic)
 
@@ -100,6 +105,8 @@ emptyPrinterOpts =
     , poUnicode = Nothing
     , poRespectful = Nothing
     , poImportGrouping = Nothing
+    , poBackwardsCompatSingleLineArgs = Nothing
+    , poBackwardsCompatListCompIndent = Nothing
     }
 
 defaultPrinterOpts :: PrinterOpts Identity
@@ -122,6 +129,8 @@ defaultPrinterOpts =
     , poUnicode = pure UnicodeNever
     , poRespectful = pure True
     , poImportGrouping = pure ImportGroupLegacy
+    , poBackwardsCompatSingleLineArgs = pure False
+    , poBackwardsCompatListCompIndent = pure False
     }
 
 -- | Fill the field values that are 'Nothing' in the first argument
@@ -151,6 +160,8 @@ fillMissingPrinterOpts p1 p2 =
     , poUnicode = maybe (poUnicode p2) pure (poUnicode p1)
     , poRespectful = maybe (poRespectful p2) pure (poRespectful p1)
     , poImportGrouping = maybe (poImportGrouping p2) pure (poImportGrouping p1)
+    , poBackwardsCompatSingleLineArgs = maybe (poBackwardsCompatSingleLineArgs p2) pure (poBackwardsCompatSingleLineArgs p1)
+    , poBackwardsCompatListCompIndent = maybe (poBackwardsCompatListCompIndent p2) pure (poBackwardsCompatListCompIndent p1)
     }
 
 parsePrinterOptsCLI ::
@@ -227,6 +238,14 @@ parsePrinterOptsCLI f =
       "import-grouping"
       "Rules for grouping import declarations (default: legacy)"
       "OPTION"
+    <*> f
+      "backwards-compat-single-line-args"
+      "Backwards compat flag for putting parenthesized function args on one line (default: false)"
+      "BOOL"
+    <*> f
+      "backwards-compat-list-comp-indent"
+      "Backwards compat flag for indenting list comprehension content (default: false)"
+      "BOOL"
 
 parsePrinterOptsJSON ::
   Applicative f =>
@@ -251,6 +270,8 @@ parsePrinterOptsJSON f =
     <*> f "unicode"
     <*> f "respectful"
     <*> f "import-grouping"
+    <*> f "backwards-compat-single-line-args"
+    <*> f "backwards-compat-list-comp-indent"
 
 {---------- PrinterOpts field types ----------}
 
@@ -641,4 +662,16 @@ defaultPrinterOptsYaml =
     , ""
     , "# Modules defined by the current Cabal package for import grouping"
     , "local-modules: []"
+    , ""
+    , "# Backwards compat flag for putting parenthesized function args on one line"
+    , "backwards-compat-single-line-args: false"
+    , ""
+    , "# Backwards compat flag for indenting list comprehension content"
+    , "backwards-compat-list-comp-indent: false"
     ]
+
+backwardsCompatOptions :: [(String, PrinterOpts Identity -> Bool)]
+backwardsCompatOptions =
+    ("backwards-compat-single-line-args", \opts -> poBackwardsCompatSingleLineArgs opts /= pure False) :
+    ("backwards-compat-list-comp-indent", \opts -> poBackwardsCompatListCompIndent opts /= pure False) :
+    []

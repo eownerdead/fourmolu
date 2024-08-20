@@ -21,3 +21,5 @@ fixities: []
 reexports: []
 import-grouping: legacy
 local-modules: []
+backwards-compat-single-line-args: false
+backwards-compat-list-comp-indent: false

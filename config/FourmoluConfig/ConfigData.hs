@@ -250,6 +250,31 @@ allOptions =
         cliOverrides = emptyOverrides
       }
   ]
+    ++ backwardsCompatOptions
+
+backwardsCompatOptions :: [Option]
+backwardsCompatOptions =
+  [ Option
+      { name = "backwards-compat-single-line-args",
+        fieldName = Just "poBackwardsCompatSingleLineArgs",
+        description = "Backwards compat flag for putting parenthesized function args on one line",
+        type_ = "Bool",
+        default_ = HsBool False,
+        ormolu = HsBool False,
+        sinceVersion = Nothing,
+        cliOverrides = emptyOverrides
+      },
+    Option
+      { name = "backwards-compat-list-comp-indent",
+        fieldName = Just "poBackwardsCompatListCompIndent",
+        description = "Backwards compat flag for indenting list comprehension content",
+        type_ = "Bool",
+        default_ = HsBool False,
+        ormolu = HsBool False,
+        sinceVersion = Nothing,
+        cliOverrides = emptyOverrides
+      }
+  ]
 
 {----- Field types -----}
 

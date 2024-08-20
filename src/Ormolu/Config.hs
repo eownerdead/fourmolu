@@ -62,6 +62,9 @@ module Ormolu.Config
     configFileName,
     FourmoluConfig (..),
     emptyConfig,
+
+    -- ** Backwards compatibility
+    backwardsCompatOptions,
   )
 where
 

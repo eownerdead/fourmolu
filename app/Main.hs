@@ -42,6 +42,7 @@ main :: IO ()
 main = do
   opts@Opts {..} <- runParser optsParserInfo
   cfg <- resolveConfig opts
+  warnBackwardsCompatOpts (cfgPrinterOpts cfg)
 
   let formatOne' =
         formatOne
@@ -129,6 +130,26 @@ resolveConfig opts@(Opts {optConfig = cliConfig, optPrinterOpts = cliPrinterOpts
     outputError = output
     outputInfo = unless (optQuiet opts) . output
     outputDebug = when (cfgDebug cliConfig) . output
+
+warnBackwardsCompatOpts :: PrinterOptsTotal -> IO ()
+warnBackwardsCompatOpts opts =
+  unless (null backwardsCompatOptsInUse) $
+    hPutStrLn stderr . unlines $
+      [ border,
+        "WARN: Backwards compatibility options in use.",
+        "  Unset these flags and reformat your code as soon as possible.",
+        "  See https://github.com/fourmolu/fourmolu#breaking-changes-policy",
+        "  for more information."
+      ]
+        ++ map ("    * " <>) backwardsCompatOptsInUse
+        ++ [border]
+  where
+    border = "===================================================================="
+    backwardsCompatOptsInUse =
+      [ label
+      | (label, isActive) <- backwardsCompatOptions,
+        isActive opts
+      ]
 
 getHaskellFiles :: FilePath -> IO [FilePath]
 getHaskellFiles input = do
